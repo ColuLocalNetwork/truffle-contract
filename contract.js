@@ -289,17 +289,23 @@ var contract = (function(module) {
     for (var i = 0; i < this.abi.length; i++) {
       var item = this.abi[i];
       if (item.type == "function") {
-        if (item.constant == true) {
-          this[item.name] = Utils.promisifyFunction(contract[item.name], constructor);
-        } else {
-          this[item.name] = Utils.synchronizeFunction(contract[item.name], this, constructor);
-        }
+        var wrapFunction = function(isConstant, web3Func) {
+          var wrapped = isConstant ? Utils.promisifyFunction(web3Func, constructor) :
+            Utils.synchronizeFunction(web3Func, this, constructor);
+          wrapped.call = Utils.promisifyFunction(web3Func.call, constructor);
+          wrapped.sendTransaction = Utils.promisifyFunction(web3Func.sendTransaction, constructor);
+          wrapped.request = web3Func.request;
+          wrapped.estimateGas = Utils.promisifyFunction(web3Func.estimateGas, constructor);
 
-        this[item.name].call = Utils.promisifyFunction(contract[item.name].call, constructor);
-        this[item.name].sendTransaction = Utils.promisifyFunction(contract[item.name].sendTransaction, constructor);
-        this[item.name].request = contract[item.name].request;
-        this[item.name].estimateGas = Utils.promisifyFunction(contract[item.name].estimateGas, constructor);
-      }
+          return wrapped;
+        };
+
+        this[item.name] = wrapFunction(item.constant, contract[item.name]);
+        if (item.inputs.length > 0) {
+          var argsString = item.inputs.reduce(function(concat, curr) { return concat + "," + curr["type"]}, "").substring(1);
+          // console.log(argsString);
+          this[item.name][argsString] = wrapFunction(item.constant, contract[item.name][argsString]);
+        }
 
       if (item.type == "event") {
         this[item.name] = contract[item.name];
