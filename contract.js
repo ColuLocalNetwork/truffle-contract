@@ -306,7 +306,7 @@ var contract = (function(module) {
           // console.log(argsString);
           this[item.name][argsString] = wrapFunction(item.constant, contract[item.name][argsString]);
         }
-
+      }
       if (item.type == "event") {
         this[item.name] = contract[item.name];
       }
