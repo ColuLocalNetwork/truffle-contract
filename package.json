@@ -29,7 +29,7 @@
     "truffle-blockchain-utils": "^0.0.3",
     "truffle-contract-schema": "^1.0.0",
     "truffle-error": "0.0.2",
-    "web3": "^1.0.0-beta.27"
+    "web3": "^1.0.0-beta.30"
   },
   "devDependencies": {
     "async": "^2.3.0",
@@ -40,7 +40,7 @@
     "browserify": "^14.0.0",
     "chai": "^3.5.0",
     "debug": "^3.1.0",
-    "ganache-core": "2.1.0-beta.1",
+    "ganache-core": "^2.1.0-beta.1",
     "lodash": "^4.17.4",
     "mocha": "^3.2.0",
     "require-nocache": "^1.0.0",
