@@ -289,21 +289,27 @@ var contract = (function(module) {
     for (var i = 0; i < this.abi.length; i++) {
       var item = this.abi[i];
       if (item.type == "function") {
-        var wrapFunction = function(isConstant, web3Func) {
+        var wrapFunction = function(isConstant, web3Func, prevFunc) {
           var wrapped = isConstant ? Utils.promisifyFunction(web3Func, constructor) :
             Utils.synchronizeFunction(web3Func, this, constructor);
           wrapped.call = Utils.promisifyFunction(web3Func.call, constructor);
           wrapped.sendTransaction = Utils.promisifyFunction(web3Func.sendTransaction, constructor);
           wrapped.request = web3Func.request;
           wrapped.estimateGas = Utils.promisifyFunction(web3Func.estimateGas, constructor);
-
+          if (prevFunc && prevFunc.signatures) {
+            for (var j = 0; j < prevFunc.signatures.length; j++) {
+              wrapped[prevFunc.signatures[j]] = prevFunc[prevFunc.signatures[j]];
+            }
+            wrapped.signatures = prevFunc.signatures;
+          }
           return wrapped;
         };
-
-        this[item.name] = wrapFunction(item.constant, contract[item.name]);
+        this[item.name] = wrapFunction(item.constant, contract[item.name], this[item.name]);
         if (item.inputs.length > 0) {
           var argsString = item.inputs.reduce(function(concat, curr) { return concat + "," + curr["type"]}, "").substring(1);
-          // console.log(argsString);
+          this[item.name].signatures = this[item.name].signatures || [];
+          this[item.name].signatures.push(argsString);
+          console.log(item.name, argsString);
           this[item.name][argsString] = wrapFunction(item.constant, contract[item.name][argsString]);
         }
       }
