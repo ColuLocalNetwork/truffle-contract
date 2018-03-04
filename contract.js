@@ -309,7 +309,6 @@ var contract = (function(module) {
           var argsString = item.inputs.reduce(function(concat, curr) { return concat + "," + curr["type"]}, "").substring(1);
           this[item.name].signatures = this[item.name].signatures || [];
           this[item.name].signatures.push(argsString);
-          console.log(item.name, argsString);
           this[item.name][argsString] = wrapFunction(item.constant, contract[item.name][argsString]);
         }
       }
